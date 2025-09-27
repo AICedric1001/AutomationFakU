@@ -10,27 +10,31 @@ app.use(express.json());
 let lastSubmissionKey = null;
 let isCurrentlyRunning = false;
 
+// Helper function to get Manila time
+function getManilaTime() {
+    return new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Manila" }));
+}
+
 // Function to check if current time matches schedule (Tuesdays and Thursdays at exactly 1:00-1:04 PM)
 function isScheduledTime() {
-    const now = new Date();
-    const dayOfWeek = now.getDay(); // 0=Sunday, 1=Monday, 2=Tuesday, 3=Wednesday, 4=Thursday, 5=Friday, 6=Saturday
-    const hour = now.getHours(); // 0-23
-    const minute = now.getMinutes(); // 0-59
+    const nowPH = getManilaTime();
+    const dayOfWeek = nowPH.getDay();
+    const hour = nowPH.getHours();
+    const minute = nowPH.getMinutes();
 
-    // Check if it's Tuesday (2) or Thursday (4), hour is 13 (1pm), and minute is 0-4 (1:00-1:04 PM)
-    const isCorrectDay = dayOfWeek === 2 || dayOfWeek === 4; // Tuesday or Thursday
-    const isCorrectHour = hour === 13; // 1pm (13:00)
-    const isCorrectMinute = minute >= 0 && minute <= 20; // First 5 minutes of 1pm
+    const isCorrectDay = dayOfWeek === 2 || dayOfWeek === 4; // Tue/Thu
+    const isCorrectHour = hour === 13; // 1 PM PHT
+    const isCorrectMinute = minute >= 0 && minute <= 20;
 
     return isCorrectDay && isCorrectHour && isCorrectMinute;
 }
 
 // Function to generate a unique key for each scheduled time slot
 function getScheduleKey() {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, "0");
-    const day = String(now.getDate()).padStart(2, "0");
+    const nowPH = getManilaTime();
+    const year = nowPH.getFullYear();
+    const month = String(nowPH.getMonth() + 1).padStart(2, "0");
+    const day = String(nowPH.getDate()).padStart(2, "0");
     const dayName = getCurrentDayName();
 
     return `${year}-${month}-${day}-${dayName}-13:00`;
@@ -53,7 +57,7 @@ function getCurrentDayName() {
         "Friday",
         "Saturday",
     ];
-    return days[new Date().getDay()];
+    return days[getManilaTime().getDay()];
 }
 
 // Health check endpoint
@@ -63,14 +67,13 @@ app.get("/health", (req, res) => {
 
 // Main trigger endpoint
 app.get("/", async (req, res) => {
-    const startTime = new Date();
+    const startTime = getManilaTime();
     const currentDay = getCurrentDayName();
     const currentHour = startTime.getHours();
     const currentMinute = startTime.getMinutes();
 
-    console.log(
-        `Ping received at ${startTime.toISOString()} (${currentDay}, ${currentHour}:${String(currentMinute).padStart(2, "0")})`,
-    );
+    console.log(`Ping received at ${startTime.toLocaleTimeString("en-PH", { timeZone: "Asia/Manila" })}`);
+
 
     // Check if it's the scheduled time
     if (!isScheduledTime()) {
@@ -129,7 +132,7 @@ app.get("/", async (req, res) => {
         // Run the form submission in the background
         await submitForm();
 
-        const endTime = new Date();
+        const endTime = getManilaTime();
         const duration = endTime - startTime;
         console.log(
             `✅ Form submission completed successfully in ${duration}ms for ${lastSubmissionKey}`,
@@ -146,7 +149,7 @@ app.get("/", async (req, res) => {
 
 // Alternative trigger endpoint (in case you want a different URL)
 app.get("/submit", async (req, res) => {
-    const startTime = new Date();
+    const startTime = getManilaTime();
     const currentDay = getCurrentDayName();
     const currentHour = startTime.getHours();
     const currentMinute = startTime.getMinutes();
@@ -204,7 +207,7 @@ app.get("/submit", async (req, res) => {
 
         await submitForm();
 
-        const endTime = new Date();
+        const endTime = getManilaTime();
         const duration = endTime - startTime;
 
         res.json({

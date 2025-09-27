@@ -1,0 +1,17 @@
+{
+    "name": "form-automation",
+    "version": "1.0.0",
+    "description": "Automated Google Form submission with Replit + UptimeRobot",
+    "main": "server.js",
+    "scripts": {
+        "start": "node server.js",
+        "dev": "node index.js",
+        "test": "node formSubmit.js"
+    },
+    "dependencies": {
+        "express": "^4.21.2",
+        "puppeteer": "^24.22.3"
+    },
+    "author": "Mohammad Amin",
+    "license": "ISC"
+}
